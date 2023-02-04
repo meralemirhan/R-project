@@ -1,0 +1,162 @@
+---
+title: "R final ödevi"
+author: "Emirhan Meral"
+date: "2023-02-04"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+install.packages("knitr")
+library(knitr)
+
+x1 = kıdem_maas$`Kıdem`
+y1 = kıdem_maas$`Maaş`
+
+
+#Tanımlayıcı İstatistikler
+```{r}
+data(kıdem_maas)
+str(kıdem_maas)
+summary(kıdem_maas)
+plot(kıdem_maas)
+dim(kıdem_maas)
+```
+Verimiz 2 sütun ve 15 satırdan oluşmaktadır.
+
+
+
+#Grafik gösterimleri
+```{r}
+hist(kıdem_maas$Maaş)
+boxplot(kıdem_maas$Maaş)
+```
+
+
+```{r}
+attach(kıdem_maas)
+install.packages("dplyr")
+install.packages("ggpubr")
+
+library(dplyr)
+library(ggpubr)
+```
+"dplyr" ve "ggpubr paketlerini yükledik.veri çerçevelerindeki nesneleri, veri çerçevesinin adini  yazmadan erişilebilir kilmak için attach() fonksiyonunu kullandık.
+
+
+
+
+```{r}
+ggdensity(y1, main= "Maaş",xlab = "Maaş")
+ggqqplot(y1)
+```
+Veri setinin belli bir dağılımdan gelip gelmediğine dair istatistiksel testleri yapmak için "ggqqplot" ve "ggdensity" grafiksel yöntemlerinden  faydalandık.
+
+
+
+
+#Normallik Testi
+```{r}
+shapiro.test(y1) 
+shapiro.test(kıdem_maas$`Maaş`)
+shapiro.test(kıdem_maas$`Kıdem`)
+ks.test(kıdem_maas_csv$`Maaş`,mean(kıdem_maas_csv$`Maaş`))    
+ks.test(kıdem_maas_csv$`Kıdem`,mean(kıdem_maas_csv$`Kıdem`))
+```
+Verimizin normal dağılıma uygun olup olmadığını test etmek için Shapiro Wilk ve Kolmogorov Smirnov Testlerini kullanıyoruz.Fakat örneklem sayımız 30 dan küçük oldugu icin Shapiro Wilk geçerli olacaktır.
+
+
+
+,#Regresyon modelinin tahmini
+```{r}
+model=lm(y1~x1) 
+summary(model) 
+confint(model, level=0.95) 
+plot( kıdem_maas$`Kıdem`,  kıdem_maas$`Maaş`) 
+cor( kıdem_maas$`Kıdem`,   kıdem_maas$`Maaş`) 
+abline(model) 
+names(model)
+model$fitted.values 
+fitted(model)
+prediction=predict(model, interval = "prediction") 
+prediction
+confidence=predict(model, interval = "confidence") 
+confidence
+plot( kıdem_maas$`Kıdem`,model$fitted) 
+coef(model) 
+coef(model) [1] 
+model$coef[1]+model$coef[2]*2 
+```
+Önce verimizin basit dogrusal regresyon modelini kurup özet bilgileirni ortaya çıkardık.Sonra %95 güven düzeyiyle moıdel katsayılarının güven aralıklarını bulduk.İki değişken arasındaki saçılım grafiğini ve korelasyon katsayısını da bulduk.Daha sonra kestirim aralıkları uyum değerlerinin alt ve üst sınırlarını veren fonksiyonunu ve uyum değerleri ve güven aralıklarını veren fonksiyonunu yazdık.
+Son olarak da regresyon katsayılarını, modelin 1.katsayısını ve x in 2 olduğu durumda y nin alacağı değeri bulan fonksiyonları yazdık.
+
+
+
+# Korelasyonlar
+```{r}
+cor.test(x1,y1)  # korelasyon testi
+cor.test(x1,y1,alternative = c("two.sided", "less","greater"), method = c("pearson", "kendall", "spearman"), exact = NULL, conf.level = 0.95)
+cor.test(x1,y1,alternative = c("two.sided", "less","greater"), method = c("spearman"), exact = NULL, conf.level = 0.95)
+```
+Korelasyon testlerimizi yaptık.(Pearson ve Spearman)
+Güven aralıkları 0.8724219 ile 0.9859249 arasında olup korelasyon katsayısı da 0.9569948 dir.
+ 
+
+
+#Kestirim aralıkları grafikleri
+```{r}
+plot(y1~x1)
+X1.sort=sort(unique(x1))
+prediction=predict(model, newdata=data.frame(x1=X1.sort), interval = "prediction")
+prediction
+lines(X1.sort,prediction[,2],lty=2)
+lines(X1.sort,prediction[,3],lty=2)
+plot(y1~x1)
+```
+
+
+
+# Güven aralıkları grafikleri
+```{r}
+X1.sort=sort(unique(x1))
+confidence=predict(model, newdata=data.frame(x1=X1.sort), interval = "confidence")
+confidence
+lines(X1.sort,confidence[,2],lty=2)
+lines(X1.sort,confidence[,3],lty=2)
+```
+Güven aralıkları grafiklerini gösteren kodları yazdık.
+
+
+
+# Standart sapmalar
+```{r}
+standatdevx1=sd(x1,na.rm=FALSE) 
+standatdevx1
+standatdevy1=sd(y1,na.rm=FALSE)
+standatdevy1 
+
+```
+x ve y ye ait standart sapmaları bulan koldarı yazdık.x in standart sapması 1.175868,y nin standart sapması 9346.76 dir.
+
+
+
+# x ile y arasında kovaryans ve varyans analizi tablosu
+```{r}
+cov(x1,y1)
+
+```
+x ile y arasındaki kovaryans 10517.91 dir.
+
+
+
+#Varyans analizi tablosu
+```{r}
+anova(model)
+```
+
+
+
+
+
+
+
